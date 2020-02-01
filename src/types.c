@@ -24,9 +24,27 @@ void atom_delete(cir_atom* a) {
 
 cir* cir_new(void) {
     cir* ir = malloc(sizeof(cir));
+    ir -> errors = list_new(5, 5);
     return ir;
 }
 
 void cir_delete(cir* ir) {
+    for(uint64_t i = 0; i < ir -> errors -> size; i++) {
+        free(ir -> errors -> items[i]);
+    } 
+
+    list_delete(ir -> errors);
     free(ir);
+}
+
+void cir_add_error(cir* ir, char* error) {
+    list_append(ir -> errors, error);
+}
+
+uint64_t cir_error_count(cir* ir) {
+    return ir -> errors -> size;
+}
+
+char* cir_get_error(cir* ir, uint64_t index) {
+    return list_get(ir -> errors, index);
 }

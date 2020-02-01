@@ -12,7 +12,15 @@ int main(void) {
 
     cir* ir = p_parse(parser);
 
-    cir_delete(ir);
+    if(cir_error_count(ir) > 0) {
+        fprintf(stderr, "\n--- ERRORS ---\n");
+        for (uint64_t i = 0; i < cir_error_count(ir); i++) {
+            fprintf(stderr, "%s\n", cir_get_error(ir, i));
+        }
+        fprintf(stderr, "\n");
+    }
+
+    cir_delete(ir); 
     parser_delete(parser);
     lexer_delete(lexer);
     stream_delete(input_stream);

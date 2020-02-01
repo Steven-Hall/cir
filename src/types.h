@@ -29,5 +29,8 @@ typedef struct cir {
 
 cir* cir_new(void);
 void cir_delete(cir* ir);
+void cir_add_error(cir* ir, char* error);
+uint64_t cir_error_count(cir* ir);
+char* cir_get_error(cir* ir, uint64_t index);
 
 #endif

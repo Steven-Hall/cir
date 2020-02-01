@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(cir VERSION 0.1)
 add_library(shared OBJECT src/stream.c
+			  src/list.c
 		          src/types.c
 		          src/lexer.c
 		          src/parser.c)
