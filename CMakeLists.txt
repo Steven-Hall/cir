@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
 project(cir VERSION 0.1)
-include_directories(include)
-add_library(cir src/lexer.c)
+add_library(shared OBJECT src/stream.c
+		          src/types.c
+		          src/lexer.c
+		          src/parser.c)
 
-#target_compile_options(cir PRIVATE -Wall -Wextra -pedantic -Werror)
+add_library(cir SHARED $<TARGET_OBJECTS:shared>)
+target_compile_options(cir PRIVATE -Wall -Wextra -pedantic -Werror)
+
+add_executable(cir_tester src/test_app.c $<TARGET_OBJECTS:shared>)
+target_compile_options(cir_tester PRIVATE -Wall -Wextra -pedantic -Werror)
