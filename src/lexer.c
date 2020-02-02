@@ -6,7 +6,7 @@ typedef struct lexer {
 } lexer;
 
 lexer* lexer_new(stream* input) {
-    lexer* l = malloc(sizeof(lexer));
+    lexer* l = xmalloc(sizeof(lexer));
 
     l -> current_token.type = CIR_START;
     l -> current_token.value = NULL;
@@ -18,8 +18,8 @@ lexer* lexer_new(stream* input) {
 }
 
 void lexer_delete(lexer* l) {
-    free(l -> current_token.value);
-    free(l);
+    xfree(l -> current_token.value);
+    xfree(l);
 }
 
 cir_token l_current_token(lexer* l) {
@@ -33,7 +33,7 @@ static bool is_whitespace(char c) {
 static char* invalid_token_value(stream* input) {
     // read 20 characters, or until the first whitespace character into the token value
     // then read from the stream until the next whitespace character
-    char* value = malloc(sizeof(char) * 24);
+    char* value = xmalloc(sizeof(char) * 24);
     value[0] = s_current_char(input);
     s_read_char(input);
     char next_char = s_current_char(input);
@@ -74,7 +74,7 @@ static void l_eat_whitespace(stream* input) {
 }
 
 void l_read_token(lexer* l) {
-    free(l -> current_token.value);
+    xfree(l -> current_token.value);
     stream* input = l -> input;
     l_eat_whitespace(input);
     char next_char = s_current_char(input);

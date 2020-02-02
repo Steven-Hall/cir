@@ -2,9 +2,10 @@
 #define _CIR_STREAM_H_
 
 #include <stdbool.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+
+#include "memory.h"
 
 typedef struct stream stream;
 

@@ -1,11 +1,10 @@
 #ifndef _CIR_PARSER_H_
 #define _CIR_PARSER_H_
 
-#include <stdlib.h>
-
 #include "lexer.h"
 #include "tokens.h"
 #include "types.h"
+#include "memory.h"
 
 typedef struct parser parser;
 

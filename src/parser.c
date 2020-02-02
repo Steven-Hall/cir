@@ -5,13 +5,13 @@ typedef struct parser {
 } parser;
 
 parser* parser_new(lexer* lexer) {
-    parser* p = malloc(sizeof(parser));
+    parser* p = xmalloc(sizeof(parser));
     p -> lexer = lexer;
     return p;
 }
 
 void parser_delete(parser* p) {
-    free(p);
+    xfree(p);
 }
 
 cir* p_parse(parser* p) {
@@ -25,7 +25,7 @@ cir* p_parse(parser* p) {
         token = l_current_token(lexer);
 
         if(token.type == CIR_INVALID) {
-            char* error_message = malloc(sizeof(char) * 100);
+            char* error_message = xmalloc(sizeof(char) * 100);
             sprintf(error_message, "invalid_token %s, line: %ld, column: %ld", token.value, token.line, token.column);
             cir_add_error(ir, error_message);
         }

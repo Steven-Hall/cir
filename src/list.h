@@ -2,7 +2,8 @@
 #define _CIR_LIST_H_
 
 #include <stdint.h>
-#include <stdlib.h>
+
+#include "memory.h"
 
 typedef struct list {
     void** items;

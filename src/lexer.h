@@ -1,10 +1,9 @@
 #ifndef _CIR_LEXER_H_
 #define _CIR_LEXER_H_
 
-#include <stdlib.h>
-
 #include "stream.h"
 #include "tokens.h"
+#include "memory.h"
 
 typedef struct lexer lexer;
 

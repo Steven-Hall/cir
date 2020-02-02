@@ -2,9 +2,9 @@
 #define _CIR_TYPES_H_
 
 #include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
 
+#include "memory.h"
 #include "list.h"
 
 typedef enum {
