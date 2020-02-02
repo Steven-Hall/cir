@@ -8,7 +8,10 @@ typedef enum {
     CIR_START,
     CIR_END,
     CIR_LPAREN,
-    CIR_INTEGER
+    CIR_RPAREN,
+    CIR_INTEGER,
+    CIR_IDENTIFIER,
+    CIR_FUNCTION,
 } cir_token_type;
 
 typedef struct cir_token {

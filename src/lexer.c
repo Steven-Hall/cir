@@ -86,6 +86,88 @@ static void l_eat_whitespace(stream* input) {
     }
 }
 
+static void l_check_keyword(lexer* l) {
+    char* value = l -> next_token.value;
+    uint64_t size = strlen(value);
+    
+    if (size == 8 && strncmp(value, "function", 8) == 0) {
+        l -> next_token.type = CIR_FUNCTION;
+    }
+}
+
+static bool l_read_integer(lexer* l) {
+    char c = s_current_char(l -> input);
+    if (c < '0' || c > '9') {
+        return false;
+    }
+
+    uint64_t value_size = 21;
+    char* value = xmalloc(sizeof(char) * value_size);
+    value[0] = c;
+
+    s_read_char(l -> input);
+    c = s_current_char(l -> input);
+
+    uint64_t i = 1;
+    while(c >= '0' && c <= '9') {
+        if (i >= (value_size - 1)) {
+            value_size += 10;
+            value = xrealloc(value, sizeof(char) * value_size);
+        }
+        value[i] = c;
+        s_read_char(l -> input);
+        c = s_current_char(l -> input);
+        i++;
+    }
+
+    value[value_size-1] = 0;
+
+    l -> next_token.type = CIR_INTEGER;
+    l -> next_token.value = value;
+    l -> next_token.line = s_line(l -> input);
+    l -> next_token.column = s_column(l -> input);
+
+    return true;
+}
+
+static bool l_read_identifier(lexer* l) {
+    char c = s_current_char(l -> input);
+    if (c != '_' && (c < 'A' || c > 'Z') && (c < 'a' || c > 'z')) {
+        return false;
+    }
+
+    uint64_t value_size = 101;
+    char* value = xmalloc(sizeof(char) * value_size);
+    value[0] = c;
+
+    s_read_char(l -> input);
+    c = s_current_char(l -> input);
+
+    uint64_t i = 1;
+    while((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || 
+            (c >= '0' && c <= '9') || c == '_') {
+        if (i >= (value_size - 1)) {
+            value_size += 100;
+            value = xrealloc(value, sizeof(char) * value_size);
+        }
+        value[i] = c;
+        s_read_char(l -> input);
+        c = s_current_char(l -> input);
+        i++;
+    }
+
+    value[i] = 0;
+
+    l -> next_token.type = CIR_IDENTIFIER;
+    l -> next_token.value = value;
+    l -> next_token.line = s_line(l -> input);
+    l -> next_token.column = s_column(l -> input);
+
+    l_check_keyword(l);
+ 
+    return true;
+}
+
 void l_read_token(lexer* l) {
     xfree(l -> current_token.value);
     l -> current_token.type = l -> next_token.type;
@@ -105,7 +187,25 @@ void l_read_token(lexer* l) {
         return;
     }
 
+    if (l_read_identifier(l) || l_read_integer(l)) {
+        return;
+    }
+
     switch(next_char) {
+        case '(':
+            l -> next_token.type = CIR_LPAREN;
+            l -> next_token.line = s_line(input);
+            l -> next_token.column = s_column(input);
+            l -> next_token.value = NULL;
+            s_read_char(input);
+            break;
+        case ')':
+            l -> next_token.type = CIR_RPAREN;
+            l -> next_token.line = s_line(input);
+            l -> next_token.column = s_column(input);
+            l -> next_token.value = NULL;
+            s_read_char(input);
+            break;
         default:
             l -> next_token.type = CIR_INVALID;
             l -> next_token.line = s_line(input);

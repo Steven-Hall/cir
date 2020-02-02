@@ -1,6 +1,8 @@
 #ifndef _CIR_PARSER_H_
 #define _CIR_PARSER_H_
 
+#include <stdarg.h>
+
 #include "lexer.h"
 #include "tokens.h"
 #include "types.h"

@@ -7,7 +7,7 @@ add_library(shared OBJECT src/stream.c
 		          src/lexer.c
 		          src/parser.c)
 
-add_library(cir SHARED $<TARGET_OBJECTS:shared>)
+ add_library(cir STATIC $<TARGET_OBJECTS:shared>)
 target_compile_options(cir PRIVATE -Wall -Wextra -pedantic -Werror)
 
 add_executable(cir_tester src/test_app.c $<TARGET_OBJECTS:shared>)
