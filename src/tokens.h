@@ -7,6 +7,7 @@ typedef enum {
     CIR_INVALID,
     CIR_START,
     CIR_END,
+    CIR_LPAREN,
     CIR_INTEGER
 } cir_token_type;
 

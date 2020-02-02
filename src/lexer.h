@@ -11,6 +11,7 @@ lexer* lexer_new(stream* input);
 void lexer_delete(lexer* l);
 
 cir_token l_current_token(lexer* l);
+cir_token l_next_token(lexer* l);
 void l_read_token(lexer* l);
 
 #endif

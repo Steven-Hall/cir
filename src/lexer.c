@@ -2,28 +2,41 @@
 
 typedef struct lexer {
     cir_token current_token;
+    cir_token next_token;
     stream* input;
 } lexer;
 
 lexer* lexer_new(stream* input) {
     lexer* l = xmalloc(sizeof(lexer));
 
-    l -> current_token.type = CIR_START;
+    // this is about to get freed by l_read_token()
+    // so make it explicitly null to avoid problems
+    // and keep valgrind happy
     l -> current_token.value = NULL;
-    l -> current_token.line = 1;
-    l -> current_token.column = 1;
+
+    l -> next_token.type = CIR_START;
+    l -> next_token.value = NULL;
+    l -> next_token.line = 1;
+    l -> next_token.column = 1;
     l -> input = input;
+
+    l_read_token(l);
 
     return l;
 }
 
 void lexer_delete(lexer* l) {
     xfree(l -> current_token.value);
+    xfree(l -> next_token.value);
     xfree(l);
 }
 
 cir_token l_current_token(lexer* l) {
     return l -> current_token;
+}
+
+cir_token l_next_token(lexer* l) {
+    return l -> next_token;
 }
 
 static bool is_whitespace(char c) {
@@ -75,23 +88,28 @@ static void l_eat_whitespace(stream* input) {
 
 void l_read_token(lexer* l) {
     xfree(l -> current_token.value);
+    l -> current_token.type = l -> next_token.type;
+    l -> current_token.value = l -> next_token.value;
+    l -> current_token.line = l -> next_token.line;
+    l -> current_token.column = l -> next_token.column;
+
     stream* input = l -> input;
     l_eat_whitespace(input);
     char next_char = s_current_char(input);
 
     if (s_end(input)) {
-        l -> current_token.type = CIR_END;
-        l -> current_token.value = NULL;
-        l -> current_token.line = s_line(input);
-        l -> current_token.column = s_column(input);
+        l -> next_token.type = CIR_END;
+        l -> next_token.value = NULL;
+        l -> next_token.line = s_line(input);
+        l -> next_token.column = s_column(input);
         return;
     }
 
     switch(next_char) {
         default:
-            l -> current_token.type = CIR_INVALID;
-            l -> current_token.line = s_line(input);
-            l -> current_token.column = s_column(input);
-            l -> current_token.value = invalid_token_value(input);
+            l -> next_token.type = CIR_INVALID;
+            l -> next_token.line = s_line(input);
+            l -> next_token.column = s_column(input);
+            l -> next_token.value = invalid_token_value(input);
    }
 }

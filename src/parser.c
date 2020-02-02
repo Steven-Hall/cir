@@ -14,6 +14,18 @@ void parser_delete(parser* p) {
     xfree(p);
 }
 
+// used after errors, seek the next sensible token
+// to start reading from again
+static void p_reset(parser* p) {
+    lexer* lexer = p -> lexer;
+    cir_token token = l_next_token(lexer);
+
+    while(token.type != CIR_END && token.type != CIR_LPAREN) {
+        l_read_token(lexer);
+        token = l_next_token(lexer);
+    }
+}
+
 cir* p_parse(parser* p) {
     cir* ir = cir_new();
     lexer* lexer = p -> lexer;
@@ -28,6 +40,7 @@ cir* p_parse(parser* p) {
             char* error_message = xmalloc(sizeof(char) * 100);
             sprintf(error_message, "invalid_token %s, line: %ld, column: %ld", token.value, token.line, token.column);
             cir_add_error(ir, error_message);
+            p_reset(p);
         }
     }
 
