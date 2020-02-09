@@ -3,6 +3,7 @@
 
 #include <string.h>
 
+#include "string_utils.h"
 #include "stream.h"
 #include "tokens.h"
 #include "memory.h"

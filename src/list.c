@@ -1,5 +1,7 @@
 #include "list.h"
 
+#include <stdio.h>
+
 list* list_new(uint64_t initial_capacity, uint64_t growth) {
     list* l = xmalloc(sizeof(list));
     l -> items = xmalloc(sizeof(void*) * initial_capacity);
@@ -11,7 +13,7 @@ list* list_new(uint64_t initial_capacity, uint64_t growth) {
 
 void list_append(list* l, void* item) {
     if ((l -> size + 1) > l -> capacity) {
-        l = xrealloc(l, (l -> capacity + l -> growth) * sizeof(void*));
+        l -> items = xrealloc(l -> items, (l -> capacity + l -> growth) * sizeof(void*));
         l -> capacity += l -> growth;
     }
     l -> items[l -> size] = item;

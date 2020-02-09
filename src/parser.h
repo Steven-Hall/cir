@@ -7,6 +7,7 @@
 #include "tokens.h"
 #include "types.h"
 #include "memory.h"
+#include "string_utils.h"
 
 typedef struct parser parser;
 

@@ -20,7 +20,8 @@ int main(void) {
         fprintf(stderr, "\n");
     }
 
-    cir_delete(ir); 
+    //TODO double free happening somewhere
+//    cir_delete(ir); 
     parser_delete(parser);
     lexer_delete(lexer);
     stream_delete(input_stream);

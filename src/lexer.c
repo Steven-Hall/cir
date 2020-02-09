@@ -87,12 +87,41 @@ static void l_eat_whitespace(stream* input) {
 }
 
 static void l_check_keyword(lexer* l) {
+    //TODO need to simplify this method
     char* value = l -> next_token.value;
-    uint64_t size = strlen(value);
     
-    if (size == 8 && strncmp(value, "function", 8) == 0) {
+    if (s_xmatch(value, "function")) {
         l -> next_token.type = CIR_FUNCTION;
+        return;
+    } else if (s_xmatch(value, "return")) {
+        l -> next_token.type = CIR_RETURN;
+        return;
+    } else if (s_xmatch(value, "move")) {
+        l -> next_token.type = CIR_MOVE;
+        return;
+    } else if (s_xmatch(value, "label")) {
+        l -> next_token.type = CIR_LABEL;
+        return;
+    } else if (s_xmatch(value, "jump")) {
+        l -> next_token.type = CIR_JUMP;
+        return;
+    } else if (s_xmatch(value, "gt")) {
+        l -> next_token.type = CIR_GT;
+        return;
+    } else if (s_xmatch(value, "if")) {
+        l -> next_token.type = CIR_IF;
+        return;
+    } else if (s_xmatch(value, "mod")) {
+        l -> next_token.type = CIR_MOD;
+        return;
+    } else if (s_xmatch(value, "or")) {
+        l -> next_token.type = CIR_OR;
+        return;
+    } else if (s_xmatch(value, "add")) {
+        l -> next_token.type = CIR_ADD;
+        return;
     }
+
 }
 
 static bool l_read_integer(lexer* l) {
@@ -132,7 +161,7 @@ static bool l_read_integer(lexer* l) {
 
 static bool l_read_identifier(lexer* l) {
     char c = s_current_char(l -> input);
-    if (c != '_' && (c < 'A' || c > 'Z') && (c < 'a' || c > 'z')) {
+    if (c != ':' && c != '_' && (c < 'A' || c > 'Z') && (c < 'a' || c > 'z')) {
         return false;
     }
 

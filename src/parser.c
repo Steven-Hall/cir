@@ -18,11 +18,11 @@ void parser_delete(parser* p) {
 // to start reading from again
 static void p_reset(parser* p) {
     lexer* lexer = p -> lexer;
-    cir_token token = l_current_token(lexer);
+    cir_token token = l_next_token(lexer);
 
     while(token.type != CIR_END && token.type != CIR_LPAREN) {
         l_read_token(lexer);
-        token = l_current_token(lexer);
+        token = l_next_token(lexer);
     }
 }
 
@@ -39,10 +39,13 @@ static void handle_error(parser*p, cir* ir, char* error_message, ...) {
 }
 
 static bool p_expect(parser* p, cir* ir, cir_token_type expected_type) {
-    cir_token_type current_type = l_current_token(p -> lexer).type;
+    cir_token current_token = l_current_token(p -> lexer);
 
-    if(current_type != expected_type) {
-        handle_error(p, ir, "expected token type %d but got %d", expected_type, current_type);
+    if(current_token.type != expected_type) {
+        handle_error(p, ir, "unexpected_token: expected: %s actual: %s value: %s line: %d column: %d",
+                cir_token_names[expected_type], cir_token_names[current_token.type],
+                current_token.value, current_token.line, current_token.column);
+        printf("ERROR\n");
         return false;
     }
     return true;
@@ -57,7 +60,6 @@ static bool p_eat(parser* p, cir* ir, cir_token_type expected_type) {
 }
 
 static cir_function_header* p_read_function_header(parser* p, cir* ir) {
-    if(!p_eat(p, ir, CIR_LPAREN)) { return NULL; }
     if(!p_eat(p, ir, CIR_FUNCTION)) { return NULL; }
 
     if(!p_expect(p, ir, CIR_IDENTIFIER)) { return NULL; }
@@ -69,16 +71,188 @@ static cir_function_header* p_read_function_header(parser* p, cir* ir) {
     function_name[name_length] = 0;
     l_read_token(p -> lexer);
 
+    // TODO read args
+
+    if(!p_eat(p, ir, CIR_LPAREN)) { return NULL; }
     if(!p_eat(p, ir, CIR_RPAREN)) { return NULL; }
 
     cir_function_header* header = cir_function_header_new(function_name);
+
     return header;
+}
+
+static cir_atom* p_read_atom(parser* p, cir* ir) {
+    cir_token token = l_current_token(p -> lexer);
+    uint64_t size = strlen(token.value);
+    char* identifier = malloc(sizeof(char) * (size + 1));
+    strncpy(identifier, token.value, size);
+    identifier[size] = 0;
+ 
+    switch(token.type) {
+        case CIR_IDENTIFIER:
+            l_read_token(p -> lexer);
+           return cir_identifier_atom_new(identifier);
+        case CIR_INTEGER:
+            l_read_token(p -> lexer);
+            return cir_integer_atom_new(atoi(identifier));
+        default:
+            handle_error(p, ir, "unexpected_token: expected: CIR_IDENTIFIER | CIR_INTEGER actual: %s", cir_token_names[token.type]);
+            return NULL;
+    }
+}
+
+static cir_statement* p_read_move(parser* p, cir* ir) {
+    //TODO better error handling
+
+    l_read_token(p -> lexer);
+
+    uint64_t dst_length = strlen(l_current_token(p -> lexer).value);
+    char* dst = xmalloc(sizeof(char) * (dst_length + 1));
+    strncpy(dst, l_current_token(p -> lexer).value, dst_length);
+    dst[dst_length] = 0;
+
+    l_read_token(p -> lexer);
+    cir_atom* src = p_read_atom(p, ir);
+
+    if (!p_eat(p, ir, CIR_RPAREN)) {
+        xfree(dst);
+        cir_atom_delete(src);
+        return NULL;
+    };
+
+    return cir_move_statement_new(dst, src);
+}
+
+// TODO rename this function to something less specific as it's now used in p_read_label
+static cir_function_body* p_read_function_body(parser* p, cir* ir);
+static cir_statement* p_read_label(parser* p, cir* ir) {
+    //TODO better error handling
+    
+    l_read_token(p -> lexer);
+    uint64_t label_size = strlen(l_current_token(p -> lexer).value);
+    char* label = xmalloc(sizeof(char) * (label_size + 1));
+    strncpy(label, l_current_token(p -> lexer).value, label_size);
+    label[label_size] = 0;
+
+    l_read_token(p -> lexer);
+
+    cir_function_body* children = p_read_function_body(p, ir);
+
+    if(!p_eat(p, ir, CIR_RPAREN)) {
+        xfree(label);
+        return NULL;
+    };
+
+    return cir_label_statement_new(label, children);
+}
+
+static cir_statement* p_read_jump(parser* p, cir* ir) {
+    // TODO better error handling
+
+    l_read_token(p -> lexer);
+    char* label = s_copy(l_current_token(p -> lexer).value);
+
+    l_read_token(p -> lexer);
+    if (!p_eat(p, ir, CIR_RPAREN)) { return NULL; }
+
+    return cir_jump_statement_new(label);
+}
+
+static cir_statement* p_read_bin_operator(parser* p, cir* ir, cir_token_type type) {
+    // TODO better error handling
+
+    l_read_token(p -> lexer);
+    char* dst = s_copy(l_current_token(p -> lexer).value);
+    l_read_token(p -> lexer);
+    char* left = s_copy(l_current_token(p -> lexer).value);
+    l_read_token(p -> lexer);
+    char* right = s_copy(l_current_token(p -> lexer).value);
+
+    cir_operator op_type;
+
+    switch(type) {
+        case CIR_GT:
+            op_type = S_GT;
+            break;
+        case CIR_MOD:
+            op_type = S_MOD;
+        case CIR_OR:
+            op_type = S_OR;
+        case CIR_ADD:
+            op_type = S_ADD;
+        default:
+            //TODO add error case
+            break;
+    }
+
+    l_read_token(p -> lexer);
+    if (!p_eat(p, ir, CIR_RPAREN)) { return NULL; }
+
+    return cir_bin_operator_statement_new(dst, left, right, op_type);
+}
+
+static cir_statement* p_read_if(parser* p, cir* ir) {
+    // TODO error handling
+    l_read_token(p -> lexer);
+
+    if (!p_eat(p, ir, CIR_LPAREN)) { return NULL; }
+
+    // read condition identifier
+    char* condition = s_copy(l_current_token(p -> lexer).value);
+    l_read_token(p -> lexer);
+
+    if (!p_eat(p, ir, CIR_RPAREN)) { return NULL; }
+
+    cir_function_body* true_body = p_read_function_body(p, ir);
+
+    cir_function_body* false_body = p_read_function_body(p, ir);
+
+    return cir_if_statement_new(condition, true_body, false_body);
+}
+
+static cir_statement* p_read_statement(parser* p, cir* ir) {
+    cir_token t = l_current_token(p -> lexer);
+    if (t.type == CIR_RPAREN) {
+        return NULL;
+    }
+    
+    if (!p_eat(p, ir, CIR_LPAREN)) { return NULL; }
+
+    t = l_current_token(p -> lexer);
+    switch(t.type) {
+        case CIR_RETURN:
+            l_read_token(p -> lexer);
+            p_eat(p, ir, CIR_RPAREN);
+            return cir_return_statement_new();
+        case CIR_MOVE:
+            return p_read_move(p, ir);
+        case CIR_LABEL:
+            return p_read_label(p, ir);
+        case CIR_JUMP:
+            return p_read_jump(p, ir);
+        case CIR_GT:
+        case CIR_MOD:
+        case CIR_OR:
+        case CIR_ADD:
+            return p_read_bin_operator(p, ir, t.type);
+        case CIR_IF:
+            return p_read_if(p, ir);
+        default:
+            handle_error(p, ir, "unexpected_operation: %s line: %d, column: %d", cir_token_names[t.type], t.line, t.column);
+            return NULL;
+    }
 }
 
 static cir_function_body* p_read_function_body(parser* p, cir* ir) {
     cir_function_body* body = cir_function_body_new();
 
     if(!p_eat(p, ir, CIR_LPAREN)) { return NULL; };
+
+    cir_statement* s = p_read_statement(p, ir);
+    while (s != NULL) {
+        cir_function_body_add_statement(body, s);
+        s = p_read_statement(p, ir);
+    }
 
     if(!p_eat(p, ir, CIR_RPAREN)) { return NULL; };
 
@@ -89,15 +263,12 @@ static cir_function* p_read_function(parser* p, cir* ir) {
     if(!p_eat(p, ir, CIR_LPAREN)) { return NULL; }
 
     cir_function* function = cir_function_new();
-
     cir_function_header* header =  p_read_function_header(p, ir);
-
     if(header == NULL) {
         return function;
     }
 
     cir_function_body* body = p_read_function_body(p, ir);
-
     if(body == NULL) {
         return function;
     }
@@ -106,6 +277,7 @@ static cir_function* p_read_function(parser* p, cir* ir) {
 
     function -> header = header;
     function -> body = body;
+
     return function;
 }
 
@@ -118,7 +290,7 @@ cir* p_parse(parser* p) {
     while(token.type != CIR_END) {
         if(token.type == CIR_INVALID) {
             char* error_message = xmalloc(sizeof(char) * 100);
-            sprintf(error_message, "invalid_token %s, line: %ld, column: %ld", token.value, token.line, token.column);
+            sprintf(error_message, "invalid_token: %s, line: %ld, column: %ld", cir_token_names[token.type], token.line, token.column);
             cir_add_error(ir, error_message);
             p_reset(p);
         }
@@ -131,7 +303,6 @@ cir* p_parse(parser* p) {
                 cir_add_function(ir, function);
             }
         }
-
         token = l_current_token(lexer);
         l_read_token(lexer);
     }

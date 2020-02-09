@@ -47,8 +47,8 @@ void s_read_char(stream* s) {
     s -> next_char = fgetc(s -> source);
     if (s -> current_char == '\n') {
         s -> line++;
-        s -> column = 1;
+        //s -> column = 1;
     } else {
-        s -> column++;
+        //s -> column++;
     }
 }

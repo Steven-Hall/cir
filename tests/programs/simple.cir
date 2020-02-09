@@ -1,0 +1,3 @@
+(function main () (
+  (if (r0) ((move r0 1)) ((move r0 2)))
+))

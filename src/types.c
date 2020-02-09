@@ -34,8 +34,96 @@ void cir_function_header_delete(cir_function_header* h) {
     xfree(h);
 }
 
+cir_atom* cir_identifier_atom_new(char* identifier) {
+    cir_atom* a = malloc(sizeof(cir_atom));
+    a -> type = ATOM_IDENTIFIER;
+    a -> identifier = identifier;
+    return a;
+}
+
+cir_atom* cir_integer_atom_new(uint64_t integer) {
+    cir_atom* a = malloc(sizeof(cir_atom));
+    a -> type = ATOM_INTEGER;
+    a -> integer = integer;
+    return a;
+}
+
+void cir_atom_delete(cir_atom* a) {
+    if (a -> type == ATOM_IDENTIFIER) {
+        xfree(a -> identifier);
+    }
+    xfree(a);
+}
+
+cir_statement* cir_return_statement_new(void) {
+    cir_statement* s = malloc(sizeof(cir_statement));
+    s -> type = S_RETURN;
+    return s;
+}
+
+cir_statement* cir_move_statement_new(char* destination, cir_atom* source) {
+    cir_statement* s = malloc(sizeof(cir_statement));
+    s -> type = S_MOVE;
+    s -> m.destination = destination;
+    s -> m.source = source;
+    return s;
+}
+
+cir_statement* cir_label_statement_new(char* label_name, cir_function_body* children) {
+    cir_statement* s = malloc(sizeof(cir_statement));
+    s -> type = S_LABEL;
+    s -> l.name = label_name;
+    s -> l.children = children;
+    return s;
+}
+
+cir_statement* cir_jump_statement_new(char* label) {
+    cir_statement* s = malloc(sizeof(cir_statement));
+    s -> type = S_JUMP;
+    s -> j.label = label;
+    return s;
+}
+
+cir_statement* cir_bin_operator_statement_new(char* dst, char* left, char* right, cir_operator type) {
+    cir_statement* s = malloc(sizeof(cir_statement));
+    s -> type = S_BIN_OP;
+    s -> o.dst = dst;
+    s -> o.left = left;
+    s -> o.right = right;
+    s -> o.operator = type;
+    return s;
+}
+
+cir_statement* cir_if_statement_new(char* condition, cir_function_body* true_path, cir_function_body* false_path) {
+    cir_statement* s = malloc(sizeof(cir_statement));
+    s -> type = S_IF;
+    s -> i.condition = condition;
+    s -> i.true_path = true_path;
+    s -> i.false_path = false_path;
+    return s;
+}
+
 void cir_statement_delete(cir_statement* s) {
-    free(s);
+    switch(s -> type) {
+        case S_MOVE:
+            free(s -> m.destination);
+            free(s -> m.source);
+        case S_LABEL:
+            free(s -> l.name);
+            cir_function_body_delete(s -> l.children);
+        case S_JUMP:
+            free(s -> j.label);
+        case S_IF:
+            free(s -> i.condition);
+            cir_function_body_delete(s -> i.true_path);
+            cir_function_body_delete(s -> i.false_path);
+        case S_BIN_OP:
+            free(s -> o.dst);
+            free(s -> o.left);
+            free(s -> o.right);
+        default:
+            free(s);
+    }
 }
 
 cir_function_body* cir_function_body_new(void) {
