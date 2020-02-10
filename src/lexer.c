@@ -190,7 +190,7 @@ static bool l_read_identifier(lexer* l) {
     l -> next_token.type = CIR_IDENTIFIER;
     l -> next_token.value = value;
     l -> next_token.line = s_line(l -> input);
-    l -> next_token.column = s_column(l -> input);
+    l -> next_token.column = s_column(l -> input) - i;
 
     l_check_keyword(l);
  
