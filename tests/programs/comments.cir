@@ -1,1 +1,4 @@
-# this is a comment
+(function main () (
+  # this is a comment
+  # this is a comment too
+))

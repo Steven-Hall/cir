@@ -186,17 +186,15 @@ static cir_statement* p_read_if(parser* p, cir* ir) {
     // TODO error handling
     l_read_token(p -> lexer);
 
-    if (!p_eat(p, ir, CIR_LPAREN)) { return NULL; }
-
     // read condition identifier
     char* condition = s_copy(l_current_token(p -> lexer).value);
     l_read_token(p -> lexer);
 
-    if (!p_eat(p, ir, CIR_RPAREN)) { return NULL; }
-
     cir_function_body* true_body = p_read_function_body(p, ir);
 
     cir_function_body* false_body = p_read_function_body(p, ir);
+
+    if(!p_eat(p, ir, CIR_RPAREN)) { return NULL; }
 
     return cir_if_statement_new(condition, true_body, false_body);
 }
@@ -281,6 +279,7 @@ cir* p_parse(parser* p) {
     while(token.type != CIR_END) {
         if(token.type == CIR_INVALID) {
             char* error_message = xmalloc(sizeof(char) * 100);
+            printf("ERROR\n");
             sprintf(error_message, "invalid_token: %s, line: %ld, column: %ld", cir_token_names[token.type], token.line, token.column);
             cir_add_error(ir, error_message);
             p_reset(p);

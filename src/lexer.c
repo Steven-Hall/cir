@@ -224,8 +224,11 @@ void l_read_token(lexer* l) {
 
     stream* input = l -> input;
 
+    // TODO make this a single function?
     l_eat_whitespace(input);
     l_eat_comment(input);
+    l_eat_whitespace(input);
+
     char next_char = s_current_char(input);
 
     if (s_end(input)) {
