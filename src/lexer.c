@@ -149,7 +149,7 @@ static bool l_read_integer(lexer* l) {
         i++;
     }
 
-    value[value_size-1] = 0;
+    value[i] = 0;
 
     l -> next_token.type = CIR_INTEGER;
     l -> next_token.value = value;

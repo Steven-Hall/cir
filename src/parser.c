@@ -90,7 +90,9 @@ static cir_atom* p_read_atom(parser* p, cir* ir) {
            return cir_identifier_atom_new(identifier);
         case CIR_INTEGER:
             l_read_token(p -> lexer);
-            return cir_integer_atom_new(atoi(identifier));
+            uint64_t value = atoi(identifier);
+            xfree(identifier);
+            return cir_integer_atom_new(value);
         default:
             handle_error(p, ir, "unexpected_token: expected: CIR_IDENTIFIER | CIR_INTEGER actual: %s", cir_token_names[token.type]);
             return NULL;

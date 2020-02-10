@@ -106,24 +106,31 @@ cir_statement* cir_if_statement_new(char* condition, cir_function_body* true_pat
 void cir_statement_delete(cir_statement* s) {
     switch(s -> type) {
         case S_MOVE:
-            //free(s -> m.destination);
-            //free(s -> m.source);
+            free(s -> m.destination);
+            free(s -> m.source);
+            break;
         case S_LABEL:
-            //free(s -> l.name);
-            //cir_function_body_delete(s -> l.children);
+            free(s -> l.name);
+            cir_function_body_delete(s -> l.children);
+            break;
         case S_JUMP:
-            //free(s -> j.label);
+            free(s -> j.label);
+            break;
         case S_IF:
-            //free(s -> i.condition);
-            //cir_function_body_delete(s -> i.true_path);
-            //cir_function_body_delete(s -> i.false_path);
+            free(s -> i.condition);
+            cir_function_body_delete(s -> i.true_path);
+            cir_function_body_delete(s -> i.false_path);
+            break;
         case S_BIN_OP:
-            //free(s -> o.dst);
-            //free(s -> o.left);
-            //free(s -> o.right);
+            free(s -> o.dst);
+            free(s -> o.left);
+            free(s -> o.right);
+            break;
         default:
-            free(s);
+            break;
     }
+    free(s);
+
 }
 
 cir_function_body* cir_function_body_new(void) {

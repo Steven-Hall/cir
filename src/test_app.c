@@ -18,6 +18,8 @@ int main(void) {
             fprintf(stderr, "%s\n", cir_get_error(ir, i));
         }
         fprintf(stderr, "\n");
+    } else {
+        printf("parsed successfully\n");
     }
 
     cir_delete(ir); 
