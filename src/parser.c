@@ -45,7 +45,6 @@ static bool p_expect(parser* p, cir* ir, cir_token_type expected_type) {
         handle_error(p, ir, "unexpected_token: expected: %s actual: %s value: %s line: %d column: %d",
                 cir_token_names[expected_type], cir_token_names[current_token.type],
                 current_token.value, current_token.line, current_token.column);
-        printf("ERROR\n");
         return false;
     }
     return true;
@@ -83,10 +82,7 @@ static cir_function_header* p_read_function_header(parser* p, cir* ir) {
 
 static cir_atom* p_read_atom(parser* p, cir* ir) {
     cir_token token = l_current_token(p -> lexer);
-    uint64_t size = strlen(token.value);
-    char* identifier = malloc(sizeof(char) * (size + 1));
-    strncpy(identifier, token.value, size);
-    identifier[size] = 0;
+    char* identifier = s_copy(token.value);
  
     switch(token.type) {
         case CIR_IDENTIFIER:
@@ -105,12 +101,7 @@ static cir_statement* p_read_move(parser* p, cir* ir) {
     //TODO better error handling
 
     l_read_token(p -> lexer);
-
-    uint64_t dst_length = strlen(l_current_token(p -> lexer).value);
-    char* dst = xmalloc(sizeof(char) * (dst_length + 1));
-    strncpy(dst, l_current_token(p -> lexer).value, dst_length);
-    dst[dst_length] = 0;
-
+    char* dst = s_copy(l_current_token(p -> lexer).value);
     l_read_token(p -> lexer);
     cir_atom* src = p_read_atom(p, ir);
 

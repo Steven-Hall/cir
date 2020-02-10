@@ -197,6 +197,24 @@ static bool l_read_identifier(lexer* l) {
     return true;
 }
 
+static void l_eat_comment(stream* input) {
+    if (s_current_char(input) != '#') {
+        return;
+    }
+
+    s_read_char(input);
+    bool skip = true;
+    while(skip) {
+        s_read_char(input);
+        if (s_current_char(input) == '\n') {
+            if (s_next_char(input) != '#') {
+                skip = false;
+            }
+        }
+    }
+    s_read_char(input);
+}
+
 void l_read_token(lexer* l) {
     xfree(l -> current_token.value);
     l -> current_token.type = l -> next_token.type;
@@ -205,7 +223,9 @@ void l_read_token(lexer* l) {
     l -> current_token.column = l -> next_token.column;
 
     stream* input = l -> input;
+
     l_eat_whitespace(input);
+    l_eat_comment(input);
     char next_char = s_current_char(input);
 
     if (s_end(input)) {

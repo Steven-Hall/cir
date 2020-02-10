@@ -1,19 +1,20 @@
 (function main () (
-  (move r0 0)
-  (label :loop_start (
-    (gt r1 r0 999)
-    (if (r1) 
-      ((jump :loop_end))
-      (
-        (mod r2 r1 3)
-        (mod r3 r1 5)
-        (or r4 r2 r3)
-        (if (r4) 
-          ((add r0 r0 1))
-          ((jump :loop_start))
-        )
-      )
-    )
-  ))
-  (label :loop_end ()))
-)
+  (move r0 0)))
+
+#  (label :loop_start (
+#    (gt r1 r0 999)
+#    (if (r1) 
+#      ((jump :loop_end))
+#      (
+#        (mod r2 r1 3)
+#        (mod r3 r1 5)
+#        (or r4 r2 r3)
+#        (if (r4) 
+#          ((add r0 r0 1))
+#          ((jump :loop_start))
+#        )
+#      )
+#    )
+#  ))
+#  (label :loop_end ()))
+#)
