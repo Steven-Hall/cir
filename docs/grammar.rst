@@ -7,12 +7,16 @@ integer    ::= "[0-9]+"
 Grammar
 ======
 
+TODO: need to add argument handling
+
 Program        ::= Function*
 Function       ::= FunctionHeader, FunctionBody
-FunctionHeader ::= '(' 'function' ArgList ')'
-ArgList        ::= '(' Arg* ')'
-Arg            ::= '(' identifier integer ')'
+FunctionHeader ::= '(' 'function' identifier ArgList ')'
+ArgList        ::= '(' ')'
 FunctionBody   ::= '(' Statement* ')'
-Statement      ::= '(' '+' identifier identifier Atom ')'
-Atom           ::= integer
-Atom           ::= identifier
+Statement      ::= Expression | IfStatement | LabelStatement | JumpStatement
+Expression     ::= '(' operator identifier identifier Atom ')'
+IfStatement    ::= '(' identifier '(' Statement* ')' '(' Statement* ')' ')'
+LabelStatement ::= '(' 'label' identifier '(' Statement* ')' ')'
+JumpStatement  ::= '(' 'jump' identifier ')'
+Atom           ::= integer | identifier
