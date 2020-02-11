@@ -16,7 +16,7 @@ void s_read_char(stream* s);
 bool s_end(const stream* s);
 char s_current_char(const stream* s);
 char s_next_char(const stream* s);
-uint64_t s_line(const stream* s);
-uint64_t s_column(const stream* s);
+uintmax_t s_line(const stream* s);
+uintmax_t s_column(const stream* s);
 
 #endif

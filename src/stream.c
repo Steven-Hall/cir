@@ -4,8 +4,8 @@ typedef struct stream {
     FILE* source;
     char next_char;
     char current_char;
-    uint64_t line;
-    uint64_t column;
+    uintmax_t line;
+    uintmax_t column;
 } stream;
 
 stream* file_stream_new(FILE* source) {
@@ -30,11 +30,11 @@ char s_current_char(const stream* s) {
     return s -> current_char;
 }
 
-uint64_t s_line(const stream* s) {
+uintmax_t s_line(const stream* s) {
     return s -> line;
 }
 
-uint64_t s_column(const stream* s) {
+uintmax_t s_column(const stream* s) {
     return s -> column;
 }
 
@@ -47,7 +47,7 @@ void s_read_char(stream* s) {
     s -> next_char = fgetc(s -> source);
     if (s -> current_char == '\n') {
         s -> line++;
-        s -> column = 1;
+        s -> column = 0;
     } else {
         s -> column++;
     }

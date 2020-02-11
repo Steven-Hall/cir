@@ -3,11 +3,13 @@
 typedef struct lexer {
     cir_token current_token;
     cir_token next_token;
+    uintmax_t paren_balance;
     stream* input;
 } lexer;
 
 lexer* lexer_new(stream* input) {
     lexer* l = xmalloc(sizeof(lexer));
+    l -> paren_balance = 0;
 
     // this is about to get freed by l_read_token()
     // so make it explicitly null to avoid problems
@@ -29,6 +31,10 @@ void lexer_delete(lexer* l) {
     xfree(l -> current_token.value);
     xfree(l -> next_token.value);
     xfree(l);
+}
+
+uintmax_t l_paren_balance(lexer* l) {
+    return l -> paren_balance;
 }
 
 cir_token l_current_token(lexer* l) {
@@ -221,6 +227,13 @@ void l_read_token(lexer* l) {
     l -> current_token.value = l -> next_token.value;
     l -> current_token.line = l -> next_token.line;
     l -> current_token.column = l -> next_token.column;
+
+    if (l -> current_token.type == CIR_LPAREN) {
+        l -> paren_balance++;
+    };
+    if (l -> current_token.type == CIR_RPAREN) {
+        l -> paren_balance--;
+    }
 
     stream* input = l -> input;
 

@@ -7,14 +7,14 @@
 
 typedef struct list {
     void** items;
-    uint64_t size;
-    uint64_t capacity;
-    uint64_t growth;
+    size_t size;
+    size_t capacity;
+    size_t growth;
 } list;
 
-list* list_new(uint64_t initial_capacity, uint64_t growth);
+list* list_new(size_t initial_capacity, size_t growth);
 void list_delete(list* list);
 void list_append(list* list, void* item);
-void* list_get(list* list, uint64_t item);
+void* list_get(list* list, size_t item);
 
 #endif

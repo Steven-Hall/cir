@@ -14,13 +14,14 @@ void parser_delete(parser* p) {
     xfree(p);
 }
 
-// used after errors, seek the next sensible token
-// to start reading from again
 static void p_reset(parser* p) {
     lexer* lexer = p -> lexer;
     cir_token token = l_next_token(lexer);
 
-    while(token.type != CIR_END && token.type != CIR_LPAREN) {
+    // paren balance counts the ratio of left parens to right
+    // the ration == 0 is a reasonable guess at where to continue
+    // reading
+    while(token.type != CIR_END && l_paren_balance(lexer) != 0) {
         l_read_token(lexer);
         token = l_next_token(lexer);
     }
@@ -61,19 +62,20 @@ static bool p_eat(parser* p, cir* ir, cir_token_type expected_type) {
 static cir_function_header* p_read_function_header(parser* p, cir* ir) {
     if(!p_eat(p, ir, CIR_FUNCTION)) { return NULL; }
 
-    if(!p_expect(p, ir, CIR_IDENTIFIER)) { return NULL; }
-    char* token_value = l_current_token(p -> lexer).value;
-    uint64_t name_length = strlen(token_value);
-    char* function_name = xmalloc(sizeof(char) * name_length + 1);
-    strncpy(function_name, token_value, name_length);
-
-    function_name[name_length] = 0;
+    char* function_name = s_copy(l_current_token(p -> lexer).value);
     l_read_token(p -> lexer);
 
-    // TODO read args
+    // TODO read function args
 
-    if(!p_eat(p, ir, CIR_LPAREN)) { return NULL; }
-    if(!p_eat(p, ir, CIR_RPAREN)) { return NULL; }
+    if(!p_eat(p, ir, CIR_LPAREN)) { 
+        xfree(function_name);
+        return NULL;
+    }
+    
+    if(!p_eat(p, ir, CIR_RPAREN)) {
+        xfree(function_name);
+        return NULL;
+    }
 
     cir_function_header* header = cir_function_header_new(function_name);
 
@@ -116,27 +118,25 @@ static cir_statement* p_read_move(parser* p, cir* ir) {
     return cir_move_statement_new(dst, src);
 }
 
-// TODO rename this function to something less specific as it's now used in p_read_label
-static cir_function_body* p_read_function_body(parser* p, cir* ir);
+// forward declaration, definition is below
+static cir_statement_list* p_read_statement_list(parser* p, cir* ir);
+
 static cir_statement* p_read_label(parser* p, cir* ir) {
     //TODO better error handling
     
     l_read_token(p -> lexer);
-    uint64_t label_size = strlen(l_current_token(p -> lexer).value);
-    char* label = xmalloc(sizeof(char) * (label_size + 1));
-    strncpy(label, l_current_token(p -> lexer).value, label_size);
-    label[label_size] = 0;
+    char* label = s_copy(l_current_token(p -> lexer).value);
 
     l_read_token(p -> lexer);
 
-    cir_function_body* children = p_read_function_body(p, ir);
+    cir_statement_list* statements = p_read_statement_list(p, ir);
 
     if(!p_eat(p, ir, CIR_RPAREN)) {
         xfree(label);
         return NULL;
     };
 
-    return cir_label_statement_new(label, children);
+    return cir_label_statement_new(label, statements);
 }
 
 static cir_statement* p_read_jump(parser* p, cir* ir) {
@@ -192,13 +192,13 @@ static cir_statement* p_read_if(parser* p, cir* ir) {
     char* condition = s_copy(l_current_token(p -> lexer).value);
     l_read_token(p -> lexer);
 
-    cir_function_body* true_body = p_read_function_body(p, ir);
+    cir_statement_list* true_path = p_read_statement_list(p, ir);
 
-    cir_function_body* false_body = p_read_function_body(p, ir);
+    cir_statement_list* false_path = p_read_statement_list(p, ir);
 
     if(!p_eat(p, ir, CIR_RPAREN)) { return NULL; }
 
-    return cir_if_statement_new(condition, true_body, false_body);
+    return cir_if_statement_new(condition, true_path, false_path);
 }
 
 static cir_statement* p_read_statement(parser* p, cir* ir) {
@@ -234,40 +234,45 @@ static cir_statement* p_read_statement(parser* p, cir* ir) {
     }
 }
 
-static cir_function_body* p_read_function_body(parser* p, cir* ir) {
-    cir_function_body* body = cir_function_body_new();
-
+static cir_statement_list* p_read_statement_list(parser* p, cir* ir) {
     if(!p_eat(p, ir, CIR_LPAREN)) { return NULL; };
+
+    cir_statement_list* l = cir_statement_list_new(10, 10);
 
     cir_statement* s = p_read_statement(p, ir);
     while (s != NULL) {
-        cir_function_body_add_statement(body, s);
+        cir_statement_list_add(l, s);
         s = p_read_statement(p, ir);
     }
 
-    if(!p_eat(p, ir, CIR_RPAREN)) { return NULL; };
+    if(!p_eat(p, ir, CIR_RPAREN)) { 
+        cir_statement_list_delete(l);
+        return NULL;
+    };
 
-    return body;
+    return l;
 }
 
 static cir_function* p_read_function(parser* p, cir* ir) {
     if(!p_eat(p, ir, CIR_LPAREN)) { return NULL; }
 
     cir_function* function = cir_function_new();
-    cir_function_header* header =  p_read_function_header(p, ir);
-    if(header == NULL) {
-        return function;
+    function -> header =  p_read_function_header(p, ir);
+    if(function -> header == NULL) {
+        cir_function_delete(function);
+        return NULL;
     }
 
-    cir_function_body* body = p_read_function_body(p, ir);
-    if(body == NULL) {
-        return function;
+    function -> statements = p_read_statement_list(p, ir);
+    if(function -> statements == NULL) {
+        cir_function_delete(function);
+        return NULL;
     }
 
-    if(!p_eat(p, ir, CIR_RPAREN)) { return NULL; }
-
-    function -> header = header;
-    function -> body = body;
+    if(!p_eat(p, ir, CIR_RPAREN)) { 
+        cir_function_delete(function);
+        return NULL;
+    }
 
     return function;
 }
@@ -281,8 +286,7 @@ cir* p_parse(parser* p) {
     while(token.type != CIR_END) {
         if(token.type == CIR_INVALID) {
             char* error_message = xmalloc(sizeof(char) * 100);
-            printf("ERROR\n");
-            sprintf(error_message, "invalid_token: %s, line: %ld, column: %ld", cir_token_names[token.type], token.line, token.column);
+            sprintf(error_message, "invalid_token: %s, value: %s, line: %ld, column: %ld", cir_token_names[token.type], token.value, token.line, token.column);
             cir_add_error(ir, error_message);
             p_reset(p);
         }

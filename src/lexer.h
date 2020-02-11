@@ -13,6 +13,7 @@ typedef struct lexer lexer;
 lexer* lexer_new(stream* input);
 void lexer_delete(lexer* l);
 
+uintmax_t l_paren_balance(lexer* l);
 cir_token l_current_token(lexer* l);
 cir_token l_next_token(lexer* l);
 void l_read_token(lexer* l);

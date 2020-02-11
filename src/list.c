@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-list* list_new(uint64_t initial_capacity, uint64_t growth) {
+list* list_new(size_t initial_capacity, size_t growth) {
     list* l = xmalloc(sizeof(list));
     l -> items = xmalloc(sizeof(void*) * initial_capacity);
     l -> size = 0;
@@ -25,7 +25,7 @@ void list_delete(list* l) {
     xfree(l);
 }
 
-void* list_get(list* l, uint64_t index) {
+void* list_get(list* l, size_t index) {
     if (index < l -> size) {
         return l -> items[index];
     }

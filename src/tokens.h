@@ -34,8 +34,8 @@ extern const char* cir_token_names[];
 typedef struct cir_token {
     cir_token_type type;
     char* value;
-    uint64_t line;
-    uint64_t column;
+    uintmax_t line;
+    uintmax_t column;
 } cir_token;
 
 #endif
