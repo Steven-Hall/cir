@@ -3,7 +3,7 @@
 #include "stream.h"
 #include "lexer.h"
 #include "parser.h"
-#include "types.h"
+#include "cir.h"
 
 int main(void) {
     int exit_code = 0;

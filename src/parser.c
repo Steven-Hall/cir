@@ -1,5 +1,7 @@
 #include "parser.h"
 
+#include <stdarg.h>
+
 typedef struct parser {
     lexer* lexer;
 } parser;
@@ -256,25 +258,26 @@ static cir_statement_list* p_read_statement_list(parser* p, cir* ir) {
 static cir_function* p_read_function(parser* p, cir* ir) {
     if(!p_eat(p, ir, CIR_LPAREN)) { return NULL; }
 
-    cir_function* function = cir_function_new();
-    function -> header =  p_read_function_header(p, ir);
-    if(function -> header == NULL) {
-        cir_function_delete(function);
+    cir_function_header* header =  p_read_function_header(p, ir);
+    if(header == NULL) {
+        cir_function_header_delete(header);
         return NULL;
     }
 
-    function -> statements = p_read_statement_list(p, ir);
-    if(function -> statements == NULL) {
-        cir_function_delete(function);
+    cir_statement_list* statements = p_read_statement_list(p, ir);
+    if(statements == NULL) {
+        cir_function_header_delete(header);
+        cir_statement_list_delete(statements);
         return NULL;
     }
 
     if(!p_eat(p, ir, CIR_RPAREN)) { 
-        cir_function_delete(function);
+        cir_function_header_delete(header);
+        cir_statement_list_delete(statements);
         return NULL;
     }
 
-    return function;
+    return cir_function_new(header, statements);
 }
 
 cir* p_parse(parser* p) {

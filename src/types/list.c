@@ -31,3 +31,7 @@ void* list_get(list* l, size_t index) {
     }
     return NULL;
 }
+
+size_t list_size(list* l) {
+    return l -> size;
+}
