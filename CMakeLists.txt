@@ -11,7 +11,6 @@ add_library(cir STATIC src/string_utils.c
 		          src/lexer.c
 		          src/parser.c
 			  src/tokens.c
-			  src/stringify.c
 			  src/cir.c)
 
 target_compile_options(cir PRIVATE -Wall -Wextra -pedantic -Werror)

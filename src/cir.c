@@ -3,7 +3,6 @@
 #include "stream.h"
 #include "lexer.h"
 #include "parser.h"
-#include "stringify.h"
 
 cir* cir_from_file(FILE* file) {
     stream* stream = file_stream_new(file);

@@ -1,5 +1,6 @@
 #include "../cir.h"
 #include "../memory.h"
+#include "list.h"
 
 typedef struct cir_function_header {
     char* function_name;
@@ -37,4 +38,8 @@ void cir_function_delete(cir_function* f) {
 
 char* cir_function_name(cir_function* f) {
     return f -> header -> function_name;
+}
+
+size_t cir_statement_count(cir_function* f) {
+    return f -> statements -> size;
 }

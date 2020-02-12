@@ -62,6 +62,8 @@ cir_function* cir_function_new(cir_function_header* header, cir_statement_list* 
 void cir_function_delete(cir_function* f);
 void cir_statement_list_add(cir_statement_list* l, cir_statement* s);
 char* cir_function_name(cir_function* f);
+size_t cir_statement_count(cir_function* f);
+cir_statement* cir_get_statement(cir_function* f, size_t index);
 
 // cir_statement_list
 cir_statement_list* cir_statement_list_new(size_t capacity, size_t growth);
