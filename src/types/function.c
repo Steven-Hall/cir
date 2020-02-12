@@ -35,3 +35,6 @@ void cir_function_delete(cir_function* f) {
     xfree(f);
 }
 
+char* cir_function_name(cir_function* f) {
+    return f -> header -> function_name;
+}

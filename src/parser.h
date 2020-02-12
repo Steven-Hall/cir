@@ -4,11 +4,11 @@
 #include "lexer.h"
 #include "cir.h"
 
-typedef struct parser parser;
+typedef struct cir_parser cir_parser;
 
-parser* parser_new(lexer* lexer);
-void parser_delete(parser* p);
+cir_parser* cir_parser_new(cir_lexer* lexer);
+void cir_parser_delete(cir_parser* p);
 
-cir* p_parse(parser* p);
+cir* p_parse(cir_parser* p);
 
 #endif

@@ -3,14 +3,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 typedef struct cir cir;
 
-const cir* cir_from_string(const char* source);
-const cir* cir_from_file(const char* filename);
-const char* cir_to_string(cir* ir);
-void cir_to_file(const cir* ir, const char* filename);
-
+cir* cir_from_string(const char* source);
+cir* cir_from_file(FILE* file);
+char* cir_to_string(cir* ir);
+void cir_to_file(cir* ir, FILE* file);
 
 typedef struct cir_function cir_function;
 typedef struct cir_function_header cir_function_header;
@@ -61,6 +61,7 @@ void cir_function_header_delete(cir_function_header* h);
 cir_function* cir_function_new(cir_function_header* header, cir_statement_list* body);
 void cir_function_delete(cir_function* f);
 void cir_statement_list_add(cir_statement_list* l, cir_statement* s);
+char* cir_function_name(cir_function* f);
 
 // cir_statement_list
 cir_statement_list* cir_statement_list_new(size_t capacity, size_t growth);

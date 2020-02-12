@@ -8,14 +8,14 @@
 #include "tokens.h"
 #include "memory.h"
 
-typedef struct lexer lexer;
+typedef struct cir_lexer cir_lexer;
 
-lexer* lexer_new(stream* input);
-void lexer_delete(lexer* l);
+cir_lexer* cir_lexer_new(stream* input);
+void cir_lexer_delete(cir_lexer* l);
 
-uintmax_t l_paren_balance(lexer* l);
-cir_token l_current_token(lexer* l);
-cir_token l_next_token(lexer* l);
-void l_read_token(lexer* l);
+uintmax_t l_paren_balance(cir_lexer* l);
+cir_token l_current_token(cir_lexer* l);
+cir_token l_next_token(cir_lexer* l);
+void l_read_token(cir_lexer* l);
 
 #endif

@@ -1,14 +1,14 @@
 #include "lexer.h"
 
-typedef struct lexer {
+typedef struct cir_lexer {
     cir_token current_token;
     cir_token next_token;
     uintmax_t paren_balance;
     stream* input;
-} lexer;
+} cir_lexer;
 
-lexer* lexer_new(stream* input) {
-    lexer* l = xmalloc(sizeof(lexer));
+cir_lexer* cir_lexer_new(stream* input) {
+    cir_lexer* l = xmalloc(sizeof(cir_lexer));
     l -> paren_balance = 0;
 
     // this is about to get freed by l_read_token()
@@ -27,21 +27,21 @@ lexer* lexer_new(stream* input) {
     return l;
 }
 
-void lexer_delete(lexer* l) {
+void cir_lexer_delete(cir_lexer* l) {
     xfree(l -> current_token.value);
     xfree(l -> next_token.value);
     xfree(l);
 }
 
-uintmax_t l_paren_balance(lexer* l) {
+uintmax_t l_paren_balance(cir_lexer* l) {
     return l -> paren_balance;
 }
 
-cir_token l_current_token(lexer* l) {
+cir_token l_current_token(cir_lexer* l) {
     return l -> current_token;
 }
 
-cir_token l_next_token(lexer* l) {
+cir_token l_next_token(cir_lexer* l) {
     return l -> next_token;
 }
 
@@ -92,7 +92,7 @@ static void l_eat_whitespace(stream* input) {
     }
 }
 
-static void l_check_keyword(lexer* l) {
+static void l_check_keyword(cir_lexer* l) {
     //TODO need to simplify this method
     char* value = l -> next_token.value;
     
@@ -130,7 +130,7 @@ static void l_check_keyword(lexer* l) {
 
 }
 
-static bool l_read_integer(lexer* l) {
+static bool l_read_integer(cir_lexer* l) {
     char c = s_current_char(l -> input);
     if (c < '0' || c > '9') {
         return false;
@@ -165,7 +165,7 @@ static bool l_read_integer(lexer* l) {
     return true;
 }
 
-static bool l_read_identifier(lexer* l) {
+static bool l_read_identifier(cir_lexer* l) {
     char c = s_current_char(l -> input);
     if (c != ':' && c != '_' && (c < 'A' || c > 'Z') && (c < 'a' || c > 'z')) {
         return false;
@@ -221,7 +221,7 @@ static void l_eat_comment(stream* input) {
     s_read_char(input);
 }
 
-void l_read_token(lexer* l) {
+void l_read_token(cir_lexer* l) {
     xfree(l -> current_token.value);
     l -> current_token.type = l -> next_token.type;
     l -> current_token.value = l -> next_token.value;

@@ -2,22 +2,22 @@
 
 #include <stdarg.h>
 
-typedef struct parser {
-    lexer* lexer;
-} parser;
+typedef struct cir_parser {
+    cir_lexer* lexer;
+} cir_parser;
 
-parser* parser_new(lexer* lexer) {
-    parser* p = xmalloc(sizeof(parser));
+cir_parser* cir_parser_new(cir_lexer* lexer) {
+    cir_parser* p = xmalloc(sizeof(cir_parser));
     p -> lexer = lexer;
     return p;
 }
 
-void parser_delete(parser* p) {
+void cir_parser_delete(cir_parser* p) {
     xfree(p);
 }
 
-static void p_reset(parser* p) {
-    lexer* lexer = p -> lexer;
+static void p_reset(cir_parser* p) {
+    cir_lexer* lexer = p -> lexer;
     cir_token token = l_next_token(lexer);
 
     // paren balance counts the ratio of left parens to right
@@ -30,7 +30,7 @@ static void p_reset(parser* p) {
 }
 
 #define MAX_ERROR_SIZE 100
-static void handle_error(parser*p, cir* ir, char* error_message, ...) {
+static void handle_error(cir_parser*p, cir* ir, char* error_message, ...) {
         char* buffer = xmalloc(sizeof(char) * (MAX_ERROR_SIZE+1));
         va_list args;
         va_start(args, error_message);
@@ -41,7 +41,7 @@ static void handle_error(parser*p, cir* ir, char* error_message, ...) {
         p_reset(p);
 }
 
-static bool p_expect(parser* p, cir* ir, cir_token_type expected_type) {
+static bool p_expect(cir_parser* p, cir* ir, cir_token_type expected_type) {
     cir_token current_token = l_current_token(p -> lexer);
 
     if(current_token.type != expected_type) {
@@ -53,7 +53,7 @@ static bool p_expect(parser* p, cir* ir, cir_token_type expected_type) {
     return true;
 }
 
-static bool p_eat(parser* p, cir* ir, cir_token_type expected_type) {
+static bool p_eat(cir_parser* p, cir* ir, cir_token_type expected_type) {
     if (p_expect(p, ir, expected_type)) {
         l_read_token(p -> lexer);
         return true;
@@ -61,7 +61,7 @@ static bool p_eat(parser* p, cir* ir, cir_token_type expected_type) {
     return false;
 }
 
-static cir_function_header* p_read_function_header(parser* p, cir* ir) {
+static cir_function_header* p_read_function_header(cir_parser* p, cir* ir) {
     if(!p_eat(p, ir, CIR_FUNCTION)) { return NULL; }
 
     char* function_name = s_copy(l_current_token(p -> lexer).value);
@@ -84,7 +84,7 @@ static cir_function_header* p_read_function_header(parser* p, cir* ir) {
     return header;
 }
 
-static cir_atom* p_read_atom(parser* p, cir* ir) {
+static cir_atom* p_read_atom(cir_parser* p, cir* ir) {
     cir_token token = l_current_token(p -> lexer);
     char* identifier = s_copy(token.value);
  
@@ -103,7 +103,7 @@ static cir_atom* p_read_atom(parser* p, cir* ir) {
     }
 }
 
-static cir_statement* p_read_move(parser* p, cir* ir) {
+static cir_statement* p_read_move(cir_parser* p, cir* ir) {
     //TODO better error handling
 
     l_read_token(p -> lexer);
@@ -121,9 +121,9 @@ static cir_statement* p_read_move(parser* p, cir* ir) {
 }
 
 // forward declaration, definition is below
-static cir_statement_list* p_read_statement_list(parser* p, cir* ir);
+static cir_statement_list* p_read_statement_list(cir_parser* p, cir* ir);
 
-static cir_statement* p_read_label(parser* p, cir* ir) {
+static cir_statement* p_read_label(cir_parser* p, cir* ir) {
     //TODO better error handling
     
     l_read_token(p -> lexer);
@@ -141,7 +141,7 @@ static cir_statement* p_read_label(parser* p, cir* ir) {
     return cir_label_statement_new(label, statements);
 }
 
-static cir_statement* p_read_jump(parser* p, cir* ir) {
+static cir_statement* p_read_jump(cir_parser* p, cir* ir) {
     // TODO better error handling
 
     l_read_token(p -> lexer);
@@ -153,7 +153,7 @@ static cir_statement* p_read_jump(parser* p, cir* ir) {
     return cir_jump_statement_new(label);
 }
 
-static cir_statement* p_read_bin_operator(parser* p, cir* ir, cir_token_type type) {
+static cir_statement* p_read_bin_operator(cir_parser* p, cir* ir, cir_token_type type) {
     // TODO better error handling
 
     l_read_token(p -> lexer);
@@ -171,10 +171,13 @@ static cir_statement* p_read_bin_operator(parser* p, cir* ir, cir_token_type typ
             break;
         case CIR_MOD:
             op_type = S_MOD;
+            break;
         case CIR_OR:
             op_type = S_OR;
+            break;
         case CIR_ADD:
             op_type = S_ADD;
+            break;
         default:
             //TODO add error case
             break;
@@ -186,7 +189,7 @@ static cir_statement* p_read_bin_operator(parser* p, cir* ir, cir_token_type typ
     return cir_bin_operator_statement_new(dst, left, right, op_type);
 }
 
-static cir_statement* p_read_if(parser* p, cir* ir) {
+static cir_statement* p_read_if(cir_parser* p, cir* ir) {
     // TODO error handling
     l_read_token(p -> lexer);
 
@@ -203,7 +206,7 @@ static cir_statement* p_read_if(parser* p, cir* ir) {
     return cir_if_statement_new(condition, true_path, false_path);
 }
 
-static cir_statement* p_read_statement(parser* p, cir* ir) {
+static cir_statement* p_read_statement(cir_parser* p, cir* ir) {
     cir_token t = l_current_token(p -> lexer);
     if (t.type == CIR_RPAREN) {
         return NULL;
@@ -236,7 +239,7 @@ static cir_statement* p_read_statement(parser* p, cir* ir) {
     }
 }
 
-static cir_statement_list* p_read_statement_list(parser* p, cir* ir) {
+static cir_statement_list* p_read_statement_list(cir_parser* p, cir* ir) {
     if(!p_eat(p, ir, CIR_LPAREN)) { return NULL; };
 
     cir_statement_list* l = cir_statement_list_new(10, 10);
@@ -255,7 +258,7 @@ static cir_statement_list* p_read_statement_list(parser* p, cir* ir) {
     return l;
 }
 
-static cir_function* p_read_function(parser* p, cir* ir) {
+static cir_function* p_read_function(cir_parser* p, cir* ir) {
     if(!p_eat(p, ir, CIR_LPAREN)) { return NULL; }
 
     cir_function_header* header =  p_read_function_header(p, ir);
@@ -280,9 +283,9 @@ static cir_function* p_read_function(parser* p, cir* ir) {
     return cir_function_new(header, statements);
 }
 
-cir* p_parse(parser* p) {
+cir* p_parse(cir_parser* p) {
     cir* ir = cir_new();
-    lexer* lexer = p -> lexer;
+    cir_lexer* lexer = p -> lexer;
     l_read_token(lexer);
     cir_token token = l_current_token(lexer);
 
