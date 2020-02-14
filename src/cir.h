@@ -7,9 +7,7 @@
 
 typedef struct cir cir;
 
-cir* cir_from_string(const char* source);
 cir* cir_from_file(FILE* file);
-char* cir_to_string(cir* ir);
 void cir_to_file(cir* ir, FILE* file);
 
 typedef struct cir_function cir_function;
@@ -46,6 +44,7 @@ typedef enum {
 // cir
 cir* cir_new(void);
 void cir_delete(cir* cir);
+char* cir_stringify(cir* cir);
 void cir_add_error(cir* ir, char* error);
 size_t cir_error_count(cir* ir);
 char* cir_get_error(cir* ir, size_t index);

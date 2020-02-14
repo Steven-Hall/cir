@@ -3,6 +3,7 @@
 #include "stream.h"
 #include "lexer.h"
 #include "parser.h"
+#include "memory.h"
 
 cir* cir_from_file(FILE* file) {
     stream* stream = file_stream_new(file);
@@ -19,7 +20,7 @@ cir* cir_from_file(FILE* file) {
 }
 
 void cir_to_file(cir* cir, FILE* file) {
-    cir_string* string = cir_stringify(cir);
+    char* string = cir_stringify(cir);
     fprintf(file, "%s\n", string);
-    cir_string_delete(string);
+    xfree(string);
 }
