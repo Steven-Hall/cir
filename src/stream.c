@@ -9,7 +9,7 @@ typedef struct stream {
 } stream;
 
 stream* file_stream_new(FILE* source) {
-    stream* s = malloc(sizeof(stream));
+    stream* s = xmalloc(sizeof(stream));
     s -> source = source;
     s -> current_char = fgetc(source);
     s -> next_char = fgetc(source);
@@ -19,7 +19,7 @@ stream* file_stream_new(FILE* source) {
 }
 
 void stream_delete(stream* s) {
-    free(s);
+    xfree(s);
 }
 
 bool s_end(const stream* s) {

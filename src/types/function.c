@@ -43,3 +43,7 @@ char* cir_function_name(cir_function* f) {
 size_t cir_statement_count(cir_function* f) {
     return f -> statements -> size;
 }
+
+cir_statement* cir_get_statement(cir_function* f, size_t index) {
+    return list_get(f -> statements, index);
+}

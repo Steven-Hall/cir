@@ -143,3 +143,27 @@ void cir_statement_list_delete(cir_statement_list* l) {
 void cir_statement_list_add(cir_statement_list* l, cir_statement* s) {
     list_append(l, s);
 }
+
+cir_statement_type cir_get_statement_type(cir_statement* s) {
+    return s -> type;
+}
+
+char* cir_get_move_statement_destination(cir_statement* s) {
+    return s -> m.destination;
+}
+
+cir_atom* cir_get_move_statement_source(cir_statement* s) {
+    return s -> m.source;
+}
+
+char* cir_get_label_statement_name(cir_statement* s) {
+    return s -> l.name;
+}
+
+size_t cir_label_statement_count(cir_statement* s) {
+    return list_size(s -> l.statements);
+}
+
+cir_statement* cir_label_get_statement(cir_statement* s, size_t index) {
+    return list_get(s -> l.statements, index);
+}

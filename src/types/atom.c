@@ -36,14 +36,14 @@ void atom_delete(cir_atom* a) {
 }
 
 cir_atom* cir_identifier_atom_new(char* identifier) {
-    cir_atom* a = malloc(sizeof(cir_atom));
+    cir_atom* a = xmalloc(sizeof(cir_atom));
     a -> type = ATOM_IDENTIFIER;
     a -> identifier = identifier;
     return a;
 }
 
 cir_atom* cir_integer_atom_new(uintmax_t integer) {
-    cir_atom* a = malloc(sizeof(cir_atom));
+    cir_atom* a = xmalloc(sizeof(cir_atom));
     a -> type = ATOM_INTEGER;
     a -> integer = integer;
     return a;
@@ -54,4 +54,14 @@ void cir_atom_delete(cir_atom* a) {
         xfree(a -> identifier);
     }
     xfree(a);
+}
+
+char* cir_atom_string_value(cir_atom* a) {
+    if (a -> type == ATOM_IDENTIFIER) {
+        return a -> identifier;
+    }
+    char* value =xmalloc(sizeof(intmax_t) * 21);
+    snprintf(value, 20, "%ld", a -> integer);
+    value[20] = 0;
+    return value;
 }
