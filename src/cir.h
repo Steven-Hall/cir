@@ -71,6 +71,11 @@ void cir_statement_list_delete(cir_statement_list* l);
 
 // cir statements
 cir_statement* cir_if_statement_new(char* condition, cir_statement_list* true_statements, cir_statement_list* false_statements);
+char* cir_if_statement_condition(cir_statement* statement);
+size_t cir_if_get_true_statement_count(cir_statement* statement);
+cir_statement* cir_if_get_true_statement(cir_statement* statement, size_t index);
+size_t cir_if_get_false_statement_count(cir_statement* statement);
+cir_statement* cir_if_get_false_statement(cir_statement* statement, size_t index);
 
 cir_statement* cir_return_statement_new(void);
 
@@ -78,7 +83,11 @@ cir_statement* cir_move_statement_new(char* dst, cir_atom* src);
 char* cir_get_move_statement_destination(cir_statement* statement);
 cir_atom* cir_get_move_statement_source(cir_statement* statement);
 
-cir_statement* cir_bin_operator_statement_new(char* dst, char* left, char* right, cir_operator op);
+cir_statement* cir_binop_statement_new(char* dst, char* left, char* right, cir_operator op);
+char* cir_binop_statement_operator_name(cir_statement* s);
+char* cir_binop_statement_destination(cir_statement* s);
+char* cir_binop_statement_left(cir_statement* s);
+char* cir_binop_statement_right(cir_statement* s);
 
 cir_statement* cir_label_statement_new(char* label, cir_statement_list* statements);
 char* cir_get_label_statement_name(cir_statement* s);
@@ -86,6 +95,7 @@ size_t cir_label_statement_count(cir_statement* s);
 cir_statement* cir_label_get_statement(cir_statement* s, size_t index);
 
 cir_statement* cir_jump_statement_new(char* label);
+char* cir_jump_get_label(cir_statement* s);
 
 void cir_statement_delete(cir_statement* s);
 

@@ -186,7 +186,7 @@ static cir_statement* p_read_bin_operator(cir_parser* p, cir* ir, cir_token_type
     l_read_token(p -> lexer);
     if (!p_eat(p, ir, CIR_RPAREN)) { return NULL; }
 
-    return cir_bin_operator_statement_new(dst, left, right, op_type);
+    return cir_binop_statement_new(dst, left, right, op_type);
 }
 
 static cir_statement* p_read_if(cir_parser* p, cir* ir) {

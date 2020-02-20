@@ -33,10 +33,10 @@ static char* cir_move_statement_stringify(cir_statement* statement) {
 
 
 // TOOD reorganize
-static char* cir_statement_stringify(cir_statement* statement, int indent);
+static char* cir_statement_stringify(cir_statement* statement);
 
 
-static char* cir_label_statement_stringify(cir_statement* statement, int indent) {
+static char* cir_label_statement_stringify(cir_statement* statement) {
     uintmax_t length = 0;
     char* buffer = xmalloc(sizeof(char) * 1000);
  
@@ -59,18 +59,11 @@ static char* cir_label_statement_stringify(cir_statement* statement, int indent)
     }
 
     for(size_t i = 0; i < cir_label_statement_count(statement); i++) {
-        char* inner_statement = cir_statement_stringify(cir_label_get_statement(statement, i), indent + 2);
+        char* inner_statement = cir_statement_stringify(cir_label_get_statement(statement, i));
         strncpy((buffer + length), inner_statement, strlen(inner_statement));
         length += strlen(inner_statement);
         buffer[length] = '\n';
         length++;
-    }
-
-    if (cir_label_statement_count(statement) > 0) {
-        for (int i = 0; i < indent; i++) {
-            buffer[length] = ' ';
-            length++;
-        }
     }
 
     buffer[length] = ')';
@@ -85,22 +78,109 @@ static char* cir_binop_statement_stringify(cir_statement* statement) {
     char* buffer = xmalloc(sizeof(char) * 1000);
  
     char* operator_name = cir_binop_statement_operator_name(statement);
+    strncpy(buffer, operator_name, strlen(operator_name));
+    length += strlen(operator_name);
+    buffer[length] = ' ';
+    length++;
+
     char* destination = cir_binop_statement_destination(statement);
+    strncpy((buffer + length), destination, strlen(destination));
+    length += strlen(destination);
+    buffer[length] = ' ';
+    length++;
+
     char* left = cir_binop_statement_left(statement);
+    strncpy((buffer + length), left, strlen(left));
+    length += strlen(destination);
+    buffer[length] = ' ';
+    length++;
+
     char* right = cir_binop_statement_right(statement);
+    strncpy((buffer + length), right, strlen(right));
+    length += strlen(destination);
 
     return buffer;
 }
 
-static char* cir_statement_stringify(cir_statement* statement, int indent) {
+static char* cir_statement_stringify(cir_statement* statement);
+
+static char* cir_if_statement_stringify(cir_statement* statement) {
     uintmax_t length = 0;
     char* buffer = xmalloc(sizeof(char) * 1000);
-    
-    for (int i = 0; i < indent; i++) {
-        buffer[length] = ' ';
+
+    strncpy(buffer, "if ", 4);
+    length += 3;
+
+    char* condition = cir_if_statement_condition(statement);
+    strncpy((buffer + length), condition, strlen(condition));
+    length += strlen(condition);
+    buffer[length] = '\n';
+    length++;
+ 
+    buffer[length] = '(';
+    length++;
+
+    if (cir_if_get_true_statement_count(statement) > 1) {
+        buffer[length] = '\n';
         length++;
     }
 
+    for(size_t i = 0; i < cir_if_get_true_statement_count(statement); i++) {
+        char* s = cir_statement_stringify(cir_if_get_true_statement(statement, i));
+        strncpy((buffer + length), s, strlen(s));
+        length += strlen(s);
+        buffer[length] = '\n';
+        length++;
+    }
+
+    buffer[length -1] = ')';
+
+    buffer[length] = '\n';
+    length++;
+
+    buffer[length] = '(';
+    length++;
+
+    if (cir_if_get_false_statement_count(statement) > 1) {
+        buffer[length] = '\n';
+        length++;
+    }
+
+    for(size_t i = 0; i < cir_if_get_false_statement_count(statement); i++) {
+        char* s = cir_statement_stringify(cir_if_get_false_statement(statement, i));
+        strncpy((buffer + length), s, strlen(s));
+        length += strlen(s);
+        buffer[length] = '\n';
+        length++;
+    }
+
+    buffer[length -1] = ')';
+    buffer[length] = '\n';
+    length++;
+
+    buffer[length] = 0;
+    return buffer;
+}
+
+static char* cir_jump_statement_stringify(cir_statement* statement) {
+    uintmax_t length = 0;
+    char* buffer = xmalloc(sizeof(char) * 1000);
+
+    strncpy(buffer, "jump ", 6);
+    length += 5;
+
+    char* label = cir_jump_get_label(statement);
+    strncpy(buffer + length, label, strlen(label));
+    length += strlen(label);
+    buffer[length] = 0;
+
+    return buffer;
+}
+
+static char* cir_statement_stringify(cir_statement* statement) {
+    uintmax_t length = 0;
+    char* buffer = xmalloc(sizeof(char) * 1000);
+    
     buffer[length] = '(';
     length++;
 
@@ -111,10 +191,16 @@ static char* cir_statement_stringify(cir_statement* statement, int indent) {
             s = cir_move_statement_stringify(statement);
             break;
         case S_LABEL:
-            s = cir_label_statement_stringify(statement, indent);
+            s = cir_label_statement_stringify(statement);
             break;
         case S_BIN_OP:
             s = cir_binop_statement_stringify(statement);
+            break;
+        case S_IF:
+            s = cir_if_statement_stringify(statement);
+            break;
+        case S_JUMP:
+            s = cir_jump_statement_stringify(statement);
             break;
         default:
             printf("%d unhandled\n", cir_get_statement_type(statement));
@@ -131,7 +217,7 @@ static char* cir_statement_stringify(cir_statement* statement, int indent) {
     return buffer;
 }
 
-static char* cir_function_stringify(cir_function* function, int indent) {
+static char* cir_function_stringify(cir_function* function) {
     uintmax_t length = 0;
     char* buffer = xmalloc(sizeof(char) * 1000);
     buffer[0] = '(';
@@ -150,13 +236,12 @@ static char* cir_function_stringify(cir_function* function, int indent) {
     buffer[length] = '\n';
     length++;
 
-    for(int i = 0; i < indent; i++) {
-        buffer[length] = ' ';
-        length++;
-    }
-
     for (size_t i = 0; i < cir_statement_count(function); i++) {
-        char* statement_string = cir_statement_stringify(cir_get_statement(function, i), indent + 2);
+        buffer[length] = ' ';
+        buffer[length+1] = ' ';
+        length += 2;
+
+        char* statement_string = cir_statement_stringify(cir_get_statement(function, i));
         strncpy((buffer + length), statement_string, strlen(statement_string));
         length += strlen(statement_string);
         buffer[length] = '\n';
@@ -175,7 +260,7 @@ char* cir_stringify(cir* cir) {
     char* buffer = xmalloc(sizeof(char) * 1000);
     uintmax_t length = 0;
     for(size_t i = 0; i < cir_function_count(cir); i++) {
-        char* function_string = cir_function_stringify(cir_get_function(cir, i), 0);
+        char* function_string = cir_function_stringify(cir_get_function(cir, i));
         length += strlen(function_string);
         strncpy(buffer, function_string, length);
     }

@@ -70,7 +70,7 @@ cir_statement* cir_jump_statement_new(char* label) {
     return s;
 }
 
-cir_statement* cir_bin_operator_statement_new(char* dst, char* left, char* right, cir_operator type) {
+cir_statement* cir_binop_statement_new(char* dst, char* left, char* right, cir_operator type) {
     cir_statement* s = xmalloc(sizeof(cir_statement));
     s -> type = S_BIN_OP;
     s -> o.dst = dst;
@@ -166,4 +166,50 @@ size_t cir_label_statement_count(cir_statement* s) {
 
 cir_statement* cir_label_get_statement(cir_statement* s, size_t index) {
     return list_get(s -> l.statements, index);
+}
+
+char* operator_names[] = {
+    "gt",
+    "or",
+    "add",
+    "mod",
+};
+
+char* cir_binop_statement_operator_name(cir_statement* s) {
+    return operator_names[s ->o.operator];
+}
+
+char* cir_binop_statement_destination(cir_statement* s) {
+    return s -> o.dst;
+}
+
+char* cir_binop_statement_left(cir_statement* s) {
+    return s -> o.left;
+}
+char* cir_binop_statement_right(cir_statement* s) {
+    return s -> o.right;
+}
+
+char* cir_if_statement_condition(cir_statement* s) {
+    return s -> i.condition;
+}
+
+size_t cir_if_get_true_statement_count(cir_statement* s) {
+    return list_size(s -> i.true_path);
+}
+
+cir_statement* cir_if_get_true_statement(cir_statement* s, size_t index) {
+    return list_get(s -> i.true_path, index);
+}
+
+size_t cir_if_get_false_statement_count(cir_statement* s) {
+    return list_size(s -> i.false_path);
+}
+
+cir_statement* cir_if_get_false_statement(cir_statement* s, size_t index) {
+    return list_get(s -> i.false_path, index);
+}
+
+char* cir_jump_get_label(cir_statement* s) {
+    return s -> j.label;
 }
