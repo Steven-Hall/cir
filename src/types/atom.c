@@ -60,7 +60,7 @@ char* cir_atom_string_value(cir_atom* a) {
     if (a -> type == ATOM_IDENTIFIER) {
         return a -> identifier;
     }
-    char* value =xmalloc(sizeof(intmax_t) * 21);
+    char* value = xmalloc(sizeof(intmax_t) * 21);
     snprintf(value, 20, "%ld", a -> integer);
     value[20] = 0;
     return value;
