@@ -1,4 +1,4 @@
-#include "cir.h"
+#include "../include/cir.h"
 
 #include "stream.h"
 #include "lexer.h"

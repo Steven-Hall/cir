@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "cir.h"
+#include "../include/cir.h"
 
 int main(void) {
     int exit_code = 0;

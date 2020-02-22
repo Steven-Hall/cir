@@ -2,7 +2,7 @@
 #define _CIR_PARSER_H_
 
 #include "lexer.h"
-#include "cir.h"
+#include "../include/cir.h"
 
 typedef struct cir_parser cir_parser;
 

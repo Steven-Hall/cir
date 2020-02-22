@@ -1,4 +1,4 @@
-#include "cir.h"
+#include "../include/cir.h"
 
 #include <stdio.h>
 #include "string_utils.h"

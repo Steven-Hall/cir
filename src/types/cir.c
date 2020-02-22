@@ -1,4 +1,4 @@
-#include "../cir.h"
+#include "../../include/cir.h"
 #include "list.h"
 #include "../memory.h"
 

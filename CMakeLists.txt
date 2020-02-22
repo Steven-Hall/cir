@@ -14,6 +14,7 @@ add_library(cir STATIC src/string_utils.c
 			  src/stringify.c
 			  src/serialization.c)
 
+target_include_directories(cir PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_options(cir PRIVATE -Wall -Wextra -pedantic -Werror)
 
 add_executable(cir_test src/test_app.c)
