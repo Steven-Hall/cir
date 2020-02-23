@@ -10,6 +10,9 @@ typedef struct cir cir;
 cir* cir_from_file(FILE* file);
 void cir_to_file(cir* ir, FILE* file);
 
+cir* cir_from_string(char* source);
+char* cir_to_string(cir* cir);
+
 typedef struct cir_function cir_function;
 typedef struct cir_function_header cir_function_header;
 
