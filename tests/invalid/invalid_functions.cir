@@ -1,9 +1,0 @@
-# missing function keyword
-(main () ())
-
-# invalid function name
-(function bad!_name () ())
-
-# missing args/body
-(function f ())
-

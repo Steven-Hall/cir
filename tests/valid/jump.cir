@@ -1,5 +1,0 @@
-(function main () (
-  (label :start (
-    (jump :start)
-  ))
-))
