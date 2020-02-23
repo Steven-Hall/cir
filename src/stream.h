@@ -11,7 +11,10 @@
 typedef struct stream stream;
 
 stream* file_stream_new(FILE* source);
+stream* string_stream_new(char* source);
+
 void stream_delete(stream* s);
+
 
 void s_read_char(stream* s);
 bool s_end(const stream* s);
